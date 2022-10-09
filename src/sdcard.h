@@ -10,7 +10,7 @@ File myFile;
 void sdcard_init() {
   Serial.println("-->[MISD] Initializing SD card..");
   // pinMode(SS, OUTPUT);
-  while (!card.init(SPI_HALF_SPEED, SD_CS, SD_MOSI, SD_MISO, SD_CLK)) {
+  if(!card.init(SPI_HALF_SPEED, SD_CS, SD_MOSI, SD_MISO, SD_CLK)) {
     Serial.println("[E][MISD] initialization failed. Things to check:");
     Serial.println("-->[MISD] * is a card is inserted?");
     Serial.println("-->[MISD] * Is your wiring correct?");

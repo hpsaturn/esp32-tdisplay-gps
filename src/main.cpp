@@ -1,13 +1,9 @@
 #include <Arduino.h>
 #include <TinyGPSPlus.h>
 #include <GUILib.hpp>
-#include <WiFi.h>
-#include <esp_bt.h>
-#include <esp_bt_main.h>
-#include <esp_wifi.h>
-#include <driver/rtc_io.h>
 #include <Batterylib.hpp>
 #include "hal.h"
+#include "power.h"
 #include "gps_manager.h"
 #include "sdcard.h"
 
@@ -29,6 +25,7 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
   };
   void onCalibrationReady() {
     Serial.println("-->[SETUP] onCalibrationReady");
+    powerLightSleepTimer(10000);
   };
   void onPaxMode(bool enable) {
     Serial.println("-->[SETUP] onPaxMode changed: " + String(enable));
@@ -36,24 +33,13 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
   void onUnitSelectionToggle() {
     Serial.println("-->[SETUP] onUnitSelectionToggle");
   };
-  void onUnitSelectionConfirm(){};
+  void onUnitSelectionConfirm(){
+    Serial.println("-->[SETUP] onUnitSelectionConfirm");
+  };
 
   void onPowerOff(){
     Serial.println("-->[SETUP] onPowerOff..");
-    digitalWrite(ADC_EN, LOW);
-    delay(10);
-    rtc_gpio_init(GPIO_NUM_14);
-    rtc_gpio_set_direction(GPIO_NUM_14, RTC_GPIO_MODE_OUTPUT_ONLY);
-    rtc_gpio_set_level(GPIO_NUM_14, 1);
-    esp_bluedroid_disable();
-    esp_bt_controller_disable();
-    esp_wifi_stop();
-    esp_deep_sleep_disable_rom_logging();
-    //esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
-    //esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
-    //esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
-    delay(1000);
-    esp_deep_sleep_start();
+    powerDeepSeep();
   };
 };
 
@@ -63,36 +49,22 @@ class MyBatteryUpdateCallbacks : public BatteryUpdateCallbacks {
     };
 };
 
-void powerLightSleepTimer(int millis) {
-    esp_sleep_enable_timer_wakeup(millis * 1000);
-    esp_light_sleep_start();
-}
-
 
 void setup(void) {
   Serial.begin(115200);
   delay(100);
   Serial.println("\n== INIT SETUP ==\n");
-
-  WiFi.disconnect(true);
-  WiFi.mode(WIFI_OFF);
-  esp_wifi_stop();
-  esp_bt_controller_disable();
-
-  setCpuFrequencyMhz(80);
-  Serial.print("-->[POWR] CPU Speed: ");
-  Serial.print(getCpuFrequencyMhz());
-  Serial.println(" MHz");
+  powerOn();
 
   gui.displayInit();
   gui.setCallbacks(new MyGUIUserPreferencesCallbacks());
-
   gui.showWelcome();
   gui.displayBottomLine("CanAirIO GPS");
+
   gui.welcomeAddMessage("Init hardware..");
-  pinMode(HW_EN, OUTPUT);
-  digitalWrite(HW_EN, HIGH);  // step-up on
+  powerPeripheralsOn();
   delay(500);
+
   gui.welcomeAddMessage("GPS init..");
   gps_init();
   delay(500);
@@ -100,13 +72,14 @@ void setup(void) {
   battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
   battery.init();
   battery.update();
+
   gui.welcomeAddMessage("SD init..");
   sdcard_init();
-  gui.welcomeAddMessage("==SETUP READY==");
-
   delay(500);
+
+  gui.welcomeAddMessage("==SETUP READY==");
   gui.showMain();
-  delay(100);
+  delay(500);
 }
 
 void loop(void) {
