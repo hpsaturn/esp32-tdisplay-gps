@@ -4,8 +4,7 @@
 Sd2Card card;
 SdVolume volume;
 SdFile root;
-
-File myFile;
+File log_file;
 
 void sdcard_init() {
   Serial.println("-->[MISD] Initializing SD card..");
@@ -49,31 +48,36 @@ void sdcard_init() {
   volumesize /= 1024 * 1024;
   Serial.print("-->[MISD] Volume size (Mbytes): ");
   Serial.println(volumesize);
-  // Serial.println("-->[MISD] Files found on the card (name, date and size in bytes):\n");
-  // root.openRoot(volume);
-  // list all files in the card with date and size
-  // root.ls(LS_R | LS_DATE | LS_SIZE);
-
+  
   if (!SD.begin(SD_CS, SD_MOSI, SD_MISO, SD_CLK)) {
     Serial.println("[E][MISD] initialization failed!");
     return;
   }
 }
 
-void writeLog(const char* msg) {
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
-  myFile = SD.open("log.txt", FILE_WRITE);
-
-  // if the file opened okay, write to it:
-  if (myFile) {
-    myFile.println(msg);
-    myFile.close();
-  } else {
-    // if the file didn't open, print an error:
-    Serial.println("[E][MISD] error opening test.txt");
-  }
+void printRootFiles() { 
+  Serial.println("\n-->[MISD] Files found on the card (name, date and size in bytes):\n");
+  root.openRoot(volume);
+  // list all files in the card with date and size
+  root.ls(LS_R | LS_DATE | LS_SIZE);
 }
+
+
+
+// void writeLog(const char* msg) {
+//   // open the file. note that only one file can be open at a time,
+//   // so you have to close this one before opening another.
+//   myFile = SD.open("log.txt", FILE_WRITE);
+
+//   // if the file opened okay, write to it:
+//   if (myFile) {
+//     myFile.println(msg);
+//     myFile.close();
+//   } else {
+//     // if the file didn't open, print an error:
+//     Serial.println("[E][MISD] error opening test.txt");
+//   }
+// }
 
   // // re-open the file for reading:
   // myFile = SD.open("test.txt");

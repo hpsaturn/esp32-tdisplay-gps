@@ -4,8 +4,8 @@
 #include <Batterylib.hpp>
 #include "hal.h"
 #include "power.h"
-#include "gps_manager.h"
 #include "sdcard.h"
+#include "gps.h"
 
 bool toggle;
 GUIData data;
@@ -80,6 +80,7 @@ void setup(void) {
   gui.welcomeAddMessage("==SETUP READY==");
   gui.showMain();
   delay(500);
+  printRootFiles();
 }
 
 void loop(void) {
@@ -93,8 +94,8 @@ void loop(void) {
   gui.setGUIStatusFlags(gps.location.isValid(), true, gps.satellites.isValid());
 
   if (gps.time.isValid()) gui.setTrackTime(gps.time.hour(),gps.time.minute(),gps.time.second());
-  if (gps.location.isValid()) gui.displayPreferenceSaveIcon();
   if (gps.speed.isValid()) gui.setTrackValues(gps.speed.kmph(),0.0);
+  if (gps_log_loop()) gui.displayPreferenceSaveIcon();
 
   smartDelay(100);
   delay(900);
