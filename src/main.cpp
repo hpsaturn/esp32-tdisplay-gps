@@ -9,6 +9,7 @@
 #include <Batterylib.hpp>
 #include "hal.h"
 #include "gps_manager.h"
+#include "sdcard.h"
 
 bool toggle;
 GUIData data;
@@ -99,6 +100,8 @@ void setup(void) {
   battery.setUpdateCallbacks(new MyBatteryUpdateCallbacks());
   battery.init();
   battery.update();
+  gui.welcomeAddMessage("SD init..");
+  sdcard_init();
   gui.welcomeAddMessage("==SETUP READY==");
 
   delay(500);
