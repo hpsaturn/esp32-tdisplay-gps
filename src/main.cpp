@@ -52,7 +52,8 @@ class MyBatteryUpdateCallbacks : public BatteryUpdateCallbacks {
 
 void setup(void) {
   Serial.begin(115200);
-  delay(100);
+  Serial.flush();
+  delay(200);
   Serial.println("\n== INIT SETUP ==\n");
   powerOn();
 

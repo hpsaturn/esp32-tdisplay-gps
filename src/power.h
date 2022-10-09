@@ -27,7 +27,7 @@ void powerLightSleepTimer(int millis) {
 }
 
 void powerOn() {
-  Serial.print("-->[POWR] Disconnecting radios..");
+  Serial.println("-->[POWR] Disconnecting radios..");
   WiFi.disconnect(true);
   WiFi.mode(WIFI_OFF);
   esp_wifi_stop();
@@ -39,6 +39,7 @@ void powerOn() {
 }
 
 void powerPeripheralsOn() {
+  Serial.println("-->[POWR] Power on peripherals..");
   pinMode(HW_EN, OUTPUT);
   digitalWrite(HW_EN, HIGH);  // step-up on
 }
