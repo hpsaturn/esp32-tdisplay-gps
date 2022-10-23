@@ -84,26 +84,34 @@ void setup(void) {
   printRootFiles();
 }
 
-void loop(void) {
-  data.mainValue = gps.satellites.value();
-  data.minorValue = 10;
-  data.unitName = "GPS";
-  data.unitSymbol = "SAT";
-  data.mainUnitId = 0;
-  data.color = AQI_COLOR::AQI_PM;
-  gui.setSensorData(data);
-  gui.setGUIStatusFlags(gps.location.isValid(), true, gps.satellites.isValid());
-
-  if (gps.time.isValid()) gui.setTrackTime(gps.time.hour(),gps.time.minute(),gps.time.second());
-  if (gps.speed.isValid()) gui.setTrackValues(gps.speed.kmph(),0.0);
-  if (gps_log_loop()) gui.displayPreferenceSaveIcon();
-
-  smartDelay(100);
-  delay(900);
-
-  if (millis() > 15000 && gps.charsProcessed() < 10) {
-    Serial.println(F("-->[GPS] No GPS data received: check wiring"));
-    // writeLog("GPS data received: failed!");
+void updateGuiData() {
+  static uint_fast64_t gts = 0;  // timestamp for GUI refresh
+  if ((millis() - gts > 1000 * 5)) {
+    gts = millis();
+    data.mainValue = gps.satellites.value();
+    data.minorValue = 10;
+    data.unitName = "GPS";
+    data.unitSymbol = "SAT";
+    data.mainUnitId = 0;
+    data.color = AQI_COLOR::AQI_PM;
+    gui.setSensorData(data);
   }
+}
+
+void updateGuiStatus() {
+  static uint_fast64_t sts = 0;  // timestamp for GUI refresh
+  if ((millis() - sts > 1000 * 1)) {
+    sts = millis();
+    gui.setGUIStatusFlags(gps.location.isValid(), true, gps.satellites.isValid());
+    if (gps.time.isValid()) gui.setTrackTime(gps.time.hour(), gps.time.minute(), gps.time.second());
+    if (gps.speed.isValid()) gui.setTrackValues(gps.speed.kmph(), (float) distanceKmToBerlin);
+    if (gps_log_loop()) gui.displayPreferenceSaveIcon();
+  }
+}
+
+void loop(void) {
+  smartDelay(1000);
+  updateGuiData();
+  updateGuiStatus();
   battery.loop();
 }

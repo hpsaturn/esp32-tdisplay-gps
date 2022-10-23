@@ -8,6 +8,8 @@ HardwareSerial * serial;
 
 bool new_log = false;
 
+unsigned long distanceKmToBerlin = 0;
+
 // This custom version of delay() ensures that the gps object
 // is being "fed".
 static void smartDelay(unsigned long ms) {
@@ -98,7 +100,7 @@ bool gps_log_loop() {
     ts = millis();
     if (!gps.location.isValid() || !gps.date.isValid()) return false;
     
-    static const double LONDON_LAT = 51.508131, LONDON_LON = -0.128002;
+    static const double BERLIN_LAT = 52.5369 , BERLIN_LON = 13.4376;
     String log_name = "lg"+String(gps.date.month())+""+String(gps.date.day())+".txt";
     log_file = SD.open(log_name.c_str(), FILE_WRITE);
 
@@ -121,33 +123,38 @@ bool gps_log_loop() {
     printFloat(gps.speed.kmph(), gps.speed.isValid(), 6, 2);
     printStr(gps.course.isValid() ? TinyGPSPlus::cardinal(gps.course.deg()) : "*** ", 6);
 
-    unsigned long distanceKmToLondon =
+    distanceKmToBerlin =
         (unsigned long)TinyGPSPlus::distanceBetween(
             gps.location.lat(),
             gps.location.lng(),
-            LONDON_LAT,
-            LONDON_LON) /
+            BERLIN_LAT,
+            BERLIN_LON) /
         1000;
-    printInt(distanceKmToLondon, gps.location.isValid(), 9);
+    printInt(distanceKmToBerlin, gps.location.isValid(), 9);
 
-    double courseToLondon =
+    double courseToBerlin =
         TinyGPSPlus::courseTo(
             gps.location.lat(),
             gps.location.lng(),
-            LONDON_LAT,
-            LONDON_LON);
+            BERLIN_LAT,
+            BERLIN_LON);
 
-    printFloat(courseToLondon, gps.location.isValid(), 7, 2);
+    printFloat(courseToBerlin, gps.location.isValid(), 7, 2);
 
-    const char *cardinalToLondon = TinyGPSPlus::cardinal(courseToLondon);
+    const char *cardinalToBerlin = TinyGPSPlus::cardinal(courseToBerlin);
 
-    printStr(gps.location.isValid() ? cardinalToLondon : "*** ", 6);
+    printStr(gps.location.isValid() ? cardinalToBerlin: "*** ", 6);
 
     printInt(gps.charsProcessed(), true, 6);
     printInt(gps.sentencesWithFix(), true, 10);
     printInt(gps.failedChecksum(), true, 9);
     log_file.println();
     log_file.close();
+
+    if (millis() > 15000 && gps.charsProcessed() < 10) {
+      Serial.println(F("-->[GPS] No GPS data received: check wiring"));
+      delay(1000);
+    }
     return true;
   }
   return false;
