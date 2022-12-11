@@ -8,7 +8,9 @@ HardwareSerial * serial;
 
 bool new_log = false;
 
-unsigned long distanceKmToBerlin = 0;
+double distanceToLastPoint = 0;
+double last_lat;
+double last_lon;
 
 // This custom version of delay() ensures that the gps object
 // is being "fed".
@@ -123,14 +125,13 @@ bool gps_log_loop() {
     printFloat(gps.speed.kmph(), gps.speed.isValid(), 6, 2);
     printStr(gps.course.isValid() ? TinyGPSPlus::cardinal(gps.course.deg()) : "*** ", 6);
 
-    distanceKmToBerlin =
-        (unsigned long)TinyGPSPlus::distanceBetween(
+    distanceToLastPoint = TinyGPSPlus::distanceBetween(
             gps.location.lat(),
             gps.location.lng(),
             BERLIN_LAT,
             BERLIN_LON) /
         1000;
-    printInt(distanceKmToBerlin, gps.location.isValid(), 9);
+    printInt((unsigned long) distanceToLastPoint, gps.location.isValid(), 9);
 
     double courseToBerlin =
         TinyGPSPlus::courseTo(

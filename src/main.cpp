@@ -9,6 +9,7 @@
 
 bool toggle;
 GUIData data;
+int sample_time = 5;
 
 class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
   void onWifiMode(bool enable) {
@@ -22,6 +23,7 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
   };
   void onSampleTime(int time) {
     Serial.println("-->[SETUP] onSampleTime changed: " + String(time));
+    sample_time = time;
   };
   void onCalibrationReady() {
     Serial.println("-->[SETUP] onCalibrationReady");
@@ -86,7 +88,7 @@ void setup(void) {
 
 void updateGuiData() {
   static uint_fast64_t gts = 0;  // timestamp for GUI refresh
-  if ((millis() - gts > 1000 * 5)) {
+  if ((millis() - gts > 1000 * sample_time)) {
     gts = millis();
     data.mainValue = gps.satellites.value();
     data.minorValue = 10;
@@ -104,7 +106,7 @@ void updateGuiStatus() {
     sts = millis();
     gui.setGUIStatusFlags(gps.location.isValid(), true, gps.satellites.isValid());
     if (gps.time.isValid()) gui.setTrackTime(gps.time.hour(), gps.time.minute(), gps.time.second());
-    if (gps.speed.isValid()) gui.setTrackValues(gps.speed.kmph(), (float) distanceKmToBerlin);
+    if (gps.speed.isValid()) gui.setTrackValues(gps.speed.kmph(), distanceToLastPoint);
     if (gps_log_loop()) gui.displayPreferenceSaveIcon();
   }
 }
