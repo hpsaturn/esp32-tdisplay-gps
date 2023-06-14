@@ -1,3 +1,5 @@
+#include <TinyGPSPlus.h>
+
 static const uint32_t GPSBaud = 9600;
 
 // The TinyGPSPlus object

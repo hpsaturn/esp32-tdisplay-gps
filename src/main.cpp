@@ -1,11 +1,10 @@
 #include <Arduino.h>
-#include <TinyGPSPlus.h>
-#include <GUILib.hpp>
-#include <Batterylib.hpp>
 #include "hal.h"
-#include "power.h"
 #include "sdcard.h"
 #include "gps.h"
+#include <GUILib.hpp>
+#include "power.h"
+#include <Batterylib.hpp>
 
 bool toggle;
 GUIData data;
@@ -35,22 +34,21 @@ class MyGUIUserPreferencesCallbacks : public GUIUserPreferencesCallbacks {
   void onUnitSelectionToggle() {
     Serial.println("-->[SETUP] onUnitSelectionToggle");
   };
-  void onUnitSelectionConfirm(){
+  void onUnitSelectionConfirm() {
     Serial.println("-->[SETUP] onUnitSelectionConfirm");
   };
 
-  void onPowerOff(){
+  void onPowerOff() {
     Serial.println("-->[SETUP] onPowerOff..");
     powerDeepSeep();
   };
 };
 
 class MyBatteryUpdateCallbacks : public BatteryUpdateCallbacks {
-    void onBatteryUpdate(float voltage, int charge, bool charging) {
-        gui.setBatteryStatus(voltage, charge, charging);
-    };
+  void onBatteryUpdate(float voltage, int charge, bool charging) {
+    gui.setBatteryStatus(voltage, charge, charging);
+  };
 };
-
 
 void setup(void) {
   Serial.begin(115200);
@@ -87,7 +85,7 @@ void setup(void) {
 }
 
 void updateGuiData() {
-  static uint_fast64_t gts = 0;  // timestamp for GUI refresh
+  static uint_fast64_t gts = 0; // timestamp for GUI refresh
   if ((millis() - gts > 1000 * sample_time)) {
     gts = millis();
     data.mainValue = gps.satellites.value();
@@ -101,13 +99,16 @@ void updateGuiData() {
 }
 
 void updateGuiStatus() {
-  static uint_fast64_t sts = 0;  // timestamp for GUI refresh
+  static uint_fast64_t sts = 0; // timestamp for GUI refresh
   if ((millis() - sts > 1000 * 1)) {
     sts = millis();
     gui.setGUIStatusFlags(gps.location.isValid(), true, gps.satellites.isValid());
-    if (gps.time.isValid()) gui.setTrackTime(gps.time.hour(), gps.time.minute(), gps.time.second());
-    if (gps.speed.isValid()) gui.setTrackValues(gps.speed.kmph(), distanceToLastPoint);
-    if (gps_log_loop()) gui.displayPreferenceSaveIcon();
+    if (gps.time.isValid())
+      gui.setTrackTime(gps.time.hour(), gps.time.minute(), gps.time.second());
+    if (gps.speed.isValid())
+      gui.setTrackValues(gps.speed.kmph(), distanceToLastPoint);
+    if (gps_log_loop())
+      gui.displayPreferenceSaveIcon();
   }
 }
 
